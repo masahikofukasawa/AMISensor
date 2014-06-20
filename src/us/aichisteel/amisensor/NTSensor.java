@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.util.Log;
 
 public class NTSensor extends AMISensor{
 	private int mMaxSize = 1000; //
@@ -29,6 +30,7 @@ public class NTSensor extends AMISensor{
 	private StringBuilder mText = new StringBuilder();
 	private double mLatestVoltage = mOffset;
 	public static final int NTSENSOR_SPS = 250;
+	private int mDataCounter = 0;
 
 	public NTSensor(Context c) {
 		super(115200,"a","s",c);
@@ -53,19 +55,23 @@ public class NTSensor extends AMISensor{
 	public void initData() {
 		mSensorData.clear();
 		mText.setLength(0);
+		mDataCounter = 0;
 	}
 
 	public void addData(byte[] rbuf, int len) {
 		for (int i = 0; i < len; i++) {
 			if (rbuf[i] == 'v') {
-				double d;
 				try {
-					mLatestVoltage = Double.parseDouble(mText.toString());
-					d = 1000 * (mLatestVoltage - mOffset) / mSensitivity;
+					if(mText.length()!=8){
+						Log.e("AMISENSOR: ", "Wrong Input Stirng1:" + mText + " Count=" + mDataCounter);
+					}else{
+						mLatestVoltage = Double.parseDouble(mText.toString());
+						mSensorData.add(1000 * (mLatestVoltage - mOffset) / mSensitivity);
+						mDataCounter++;
+					}
 				} catch (Exception e) {
-					d = 0;
+					Log.e("AMISENSOR: ", "Wrong Input Stirng2:" + mText);
 				}
-				mSensorData.add(d);
 				mText.setLength(0);
 
 				while (mSensorData.size() > mMaxSize) {

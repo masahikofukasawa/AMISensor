@@ -41,6 +41,7 @@ public class LineSensor extends AMISensor {
 		}
 
 		public double getMag(int ch, int axis) {
+			if(ch<1 || ch>16) return 0;
 			return mag[axis][ch - 1];
 		}
 
@@ -49,15 +50,10 @@ public class LineSensor extends AMISensor {
 		}
 
 		public int calcPow(int ch) {
-			int ret;
-			try {
-				ret = (int) Math.sqrt(mag[0][ch - 1] * mag[0][ch - 1]
-						+ mag[1][ch - 1] * mag[1][ch - 1] + mag[2][ch - 1]
-						* mag[2][ch - 1]);
-			} catch (Exception e) {
-				ret = 0;
-			}
-			return ret;
+			if(ch<1 || ch>16) return 0;
+			return (int) Math.sqrt(mag[0][ch - 1] * mag[0][ch - 1]
+					+ mag[1][ch - 1] * mag[1][ch - 1] + mag[2][ch - 1]
+					* mag[2][ch - 1]);
 		}
 	}
 
@@ -80,7 +76,8 @@ public class LineSensor extends AMISensor {
 	public void setSensorAxis(int id) {
 		mAxisId = id;
 	}
-	public int getSensorAxis(){
+
+	public int getSensorAxis() {
 		return mAxisId;
 	}
 

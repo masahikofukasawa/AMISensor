@@ -26,13 +26,12 @@ import android.hardware.usb.UsbManager;
 
 import com.physicaloid.lib.Physicaloid;
 import com.physicaloid.lib.usb.driver.uart.UartConfig;
-//import org.achartengine.model.XYMultipleSeriesDataset;
 
 public abstract class AMISensor {
 
 	protected Physicaloid mSerial;
 	protected int iBaudRate;
-	protected StringBuilder mText = new StringBuilder();
+//	protected StringBuilder mText = new StringBuilder();
 	protected boolean lastDataIs0x0D = false;
 	protected static final String CR = "\r";
 	protected String stTransmit = CR;
@@ -45,8 +44,6 @@ public abstract class AMISensor {
 	abstract public void initData();
 
 	abstract public void addData(byte[] rbuf, int len);
-
-//	abstract public void addToDataset(XYMultipleSeriesDataset dataset);
 
 	protected AMISensorInterface sensorListener = null;
 
@@ -153,7 +150,7 @@ public abstract class AMISensor {
 				len = read(rbuf);
 				if (len > 0) {
 					addData(rbuf, len);
-					setSerialDataToTextView(rbuf, len);
+//					setSerialDataToTextView(rbuf, len);
 					try {
 						sensorListener.dataReady();
 					} catch (Exception e) {
@@ -161,7 +158,7 @@ public abstract class AMISensor {
 					}
 				}
 				try {
-					Thread.sleep(200);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -179,8 +176,9 @@ public abstract class AMISensor {
 		if (!mSerial.isOpened()) {
 			if (!mSerial.open()) {
 			} else {
-				mSerial.setConfig(new UartConfig(iBaudRate, 8, 1, 0, false,
-						false));
+				mSerial.setConfig(new UartConfig(iBaudRate,
+						UartConfig.DATA_BITS8, UartConfig.STOP_BITS1,
+						UartConfig.PARITY_NONE, false, false));
 			}
 		}
 		if (!mRunningMainLoop) {
@@ -192,6 +190,7 @@ public abstract class AMISensor {
 		mSerial.close();
 	}
 
+/*
 	protected void setSerialDataToTextView(byte[] rbuf, int len) {
 		for (int i = 0; i < len; i++) {
 			// "\r":CR(0x0D) "\n":LF(0x0A)
@@ -219,6 +218,7 @@ public abstract class AMISensor {
 			}
 		}
 	}
+*/
 
 	protected String changeEscapeSequence(String in) {
 		String out = new String();
