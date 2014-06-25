@@ -17,13 +17,11 @@
 package us.aichisteel.amisensor;
 
 import java.io.IOException;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbManager;
-
 import com.physicaloid.lib.Physicaloid;
 import com.physicaloid.lib.usb.driver.uart.UartConfig;
 
@@ -31,11 +29,8 @@ public abstract class AMISensor {
 
 	protected Physicaloid mSerial;
 	protected int iBaudRate;
-//	protected StringBuilder mText = new StringBuilder();
-	protected boolean lastDataIs0x0D = false;
 	protected static final String CR = "\r";
 	protected String stTransmit = CR;
-	protected final static String BR = System.getProperty("line.separator");
 	protected boolean mRunningMainLoop;
 	protected String stStartCommand;
 	protected String stStopCommand;
@@ -44,6 +39,10 @@ public abstract class AMISensor {
 	abstract public void initData();
 
 	abstract public void addData(byte[] rbuf, int len);
+
+	abstract public void setOffset();
+
+	abstract public void clearOffset();
 
 	protected AMISensorInterface sensorListener = null;
 
@@ -150,7 +149,6 @@ public abstract class AMISensor {
 				len = read(rbuf);
 				if (len > 0) {
 					addData(rbuf, len);
-//					setSerialDataToTextView(rbuf, len);
 					try {
 						sensorListener.dataReady();
 					} catch (Exception e) {
@@ -190,36 +188,6 @@ public abstract class AMISensor {
 		mSerial.close();
 	}
 
-/*
-	protected void setSerialDataToTextView(byte[] rbuf, int len) {
-		for (int i = 0; i < len; i++) {
-			// "\r":CR(0x0D) "\n":LF(0x0A)
-			if (rbuf[i] == 0x0D) {
-				mText.append(BR);
-			} else if (rbuf[i] == 0x0A) {
-				// if (iTarget != MENU_TARGET_NTSENSOR) {
-				mText.append(BR);
-				// }
-			} else if ((rbuf[i] == 0x0D) && (rbuf[i + 1] == 0x0A)) {
-				mText.append(BR);
-				i++;
-			} else if (rbuf[i] == 0x0D) {
-				// case of rbuf[last] == 0x0D and rbuf[0] == 0x0A
-				lastDataIs0x0D = true;
-			} else if (lastDataIs0x0D && (rbuf[0] == 0x0A)) {
-				mText.append(BR);
-				lastDataIs0x0D = false;
-			} else if (lastDataIs0x0D && (i != 0)) {
-				// only disable flag
-				lastDataIs0x0D = false;
-				i--;
-			} else {
-				mText.append((char) rbuf[i]);
-			}
-		}
-	}
-*/
-
 	protected String changeEscapeSequence(String in) {
 		String out = new String();
 		try {
@@ -249,12 +217,8 @@ public abstract class AMISensor {
 		for (int i = 0; i < sz; i++) {
 			char ch = str.charAt(i);
 			if (inUnicode) {
-				// if in unicode, then we're reading unicode
-				// values in somehow
 				unicode.append(ch);
 				if (unicode.length() == 4) {
-					// unicode now contains the four hex digits
-					// which represents our unicode character
 					try {
 						int value = Integer.parseInt(unicode.toString(), 16);
 						strout.append((char) value);
@@ -262,9 +226,6 @@ public abstract class AMISensor {
 						inUnicode = false;
 						hadSlash = false;
 					} catch (NumberFormatException nfe) {
-						// throw new
-						// NestableRuntimeException("Unable to parse unicode value: "
-						// + unicode, nfe);
 						throw new IOException("Unable to parse unicode value: "
 								+ unicode, nfe);
 					}
@@ -272,7 +233,6 @@ public abstract class AMISensor {
 				continue;
 			}
 			if (hadSlash) {
-				// handle an escaped value
 				hadSlash = false;
 				switch (ch) {
 				case '\\':
@@ -300,7 +260,6 @@ public abstract class AMISensor {
 					strout.append('\b');
 					break;
 				case 'u': {
-					// uh-oh, we're in unicode country....
 					inUnicode = true;
 					break;
 				}
@@ -316,8 +275,6 @@ public abstract class AMISensor {
 			strout.append(ch);
 		}
 		if (hadSlash) {
-			// then we're in the weird case of a \ at the end of the
-			// string, let's output it anyway.
 			strout.append('\\');
 		}
 		return new String(strout.toString());

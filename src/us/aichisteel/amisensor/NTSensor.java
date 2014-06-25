@@ -18,22 +18,22 @@ package us.aichisteel.amisensor;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import android.content.Context;
 import android.util.Log;
 
-public class NTSensor extends AMISensor{
+public class NTSensor extends AMISensor {
+	public static final int NTSENSOR_SPS = 250;
+	private static final double DEFAULT_OFFSET = 2.3;
 	private int mMaxSize = 1000; //
 	private double mSensitivity = 4; // 4[V/uT]
-	private double mOffset = 2.3;
+	private double mOffset = DEFAULT_OFFSET;
 	private List<Double> mSensorData;
 	private StringBuilder mText = new StringBuilder();
 	private double mLatestVoltage = mOffset;
-	public static final int NTSENSOR_SPS = 250;
 	private int mDataCounter = 0;
 
 	public NTSensor(Context c) {
-		super(115200,"a","s",c);
+		super(115200, "a", "s", c);
 		this.mSensorData = new ArrayList<Double>();
 	}
 
@@ -41,9 +41,8 @@ public class NTSensor extends AMISensor{
 		return mSensorData;
 	}
 
-	public double setOffset() {
-		mOffset = mLatestVoltage;
-		return mOffset;
+	public double getLatestVoltage(){
+		return mLatestVoltage;
 	}
 
 	public void setMaxTime(double sec) {
@@ -52,21 +51,34 @@ public class NTSensor extends AMISensor{
 		}
 	}
 
+	@Override
+	public void setOffset() {
+		mOffset = mLatestVoltage;
+	}
+	@Override
+	public void clearOffset(){
+		mOffset = DEFAULT_OFFSET;
+	}
+
+	@Override
 	public void initData() {
 		mSensorData.clear();
 		mText.setLength(0);
 		mDataCounter = 0;
 	}
 
+	@Override
 	public void addData(byte[] rbuf, int len) {
 		for (int i = 0; i < len; i++) {
 			if (rbuf[i] == 'v') {
 				try {
-					if(mText.length()!=8){
-						Log.e("AMISENSOR: ", "Wrong Input Stirng1:" + mText + " Count=" + mDataCounter);
-					}else{
+					if (mText.length() != 8) {
+						Log.e("AMISENSOR: ", "Wrong Input Stirng1:" + mText
+								+ " Count=" + mDataCounter);
+					} else {
 						mLatestVoltage = Double.parseDouble(mText.toString());
-						mSensorData.add(1000 * (mLatestVoltage - mOffset) / mSensitivity);
+						mSensorData.add(1000 * (mLatestVoltage - mOffset)
+								/ mSensitivity);
 						mDataCounter++;
 					}
 				} catch (Exception e) {
