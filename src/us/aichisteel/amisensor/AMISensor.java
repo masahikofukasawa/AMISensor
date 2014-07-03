@@ -27,6 +27,8 @@ import com.physicaloid.lib.usb.driver.uart.UartConfig;
 
 public abstract class AMISensor {
 
+	protected Context mContext;
+	protected AMISensorInterface sensorListener = null;
 	protected Physicaloid mSerial;
 	protected int iBaudRate;
 	protected static final String CR = "\r";
@@ -34,9 +36,11 @@ public abstract class AMISensor {
 	protected boolean mRunningMainLoop;
 	protected String stStartCommand;
 	protected String stStopCommand;
-	protected final static String USB_PERMISSION = "us.aichisteel.amisensor.USB_PERMISSION";
+	protected boolean isStartSensor = false;
 
-	abstract public void initData();
+	public final static String USB_PERMISSION = "us.aichisteel.amisensor.USB_PERMISSION";
+
+	abstract protected void initData();
 
 	abstract public void addData(byte[] rbuf, int len);
 
@@ -44,32 +48,29 @@ public abstract class AMISensor {
 
 	abstract public void clearOffset();
 
-	protected AMISensorInterface sensorListener = null;
-
-	public AMISensor(int baudrate, String start, String stop, Context c) {
+	public AMISensor(int baudrate, String start, String stop, Context c,
+			AMISensorInterface listener) {
 		iBaudRate = baudrate;
 		stStartCommand = start;
 		stStopCommand = stop;
 		mRunningMainLoop = false;
 		mSerial = new Physicaloid(c);
+		mContext = c;
 
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-		c.registerReceiver(mUsbReceiver, filter);
+		mContext.registerReceiver(mUsbReceiver, filter);
+		this.sensorListener = listener;
 	}
 
-	public void initialize(AMISensorInterface listener) {
-		if (!mRunningMainLoop) {
-			mainloop();
-		}
-		this.sensorListener = listener;
+	public void initializeSensor() {
 		openUsbSerial();
 	}
 
-	public void finalize(Context c) {
+	public void finalizeSensor() {
 		closeUsbSerial();
-		c.unregisterReceiver(mUsbReceiver);
+		mContext.unregisterReceiver(mUsbReceiver);
 		this.sensorListener = null;
 		mRunningMainLoop = false;
 	}
@@ -80,6 +81,9 @@ public abstract class AMISensor {
 			String strWrite = changeEscapeSequence(stStartCommand);
 			mSerial.write(strWrite.getBytes(), strWrite.length());
 			initData();
+			if (!mRunningMainLoop) {
+				mainloop();
+			}
 		}
 	}
 
@@ -101,15 +105,7 @@ public abstract class AMISensor {
 			String action = intent.getAction();
 			if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
 				if (sensorListener != null) {
-					if (!isReady()) {
-						openUsbSerial();
-						if (isReady()) {
-							sensorListener.attachedSensor();
-						}
-					}
-				}
-				if (!mRunningMainLoop) {
-					mainloop();
+					sensorListener.attachedSensor();
 				}
 			} else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
 				closeUsbSerial();
@@ -117,18 +113,8 @@ public abstract class AMISensor {
 					sensorListener.detachedSensor();
 				}
 			} else if (USB_PERMISSION.equals(action)) {
-				synchronized (this) {
-					if (sensorListener != null) {
-						if (!isReady()) {
-							openUsbSerial();
-							if (isReady()) {
-								sensorListener.attachedSensor();
-							}
-						}
-					}
-				}
-				if (!mRunningMainLoop) {
-					mainloop();
+				if (sensorListener != null) {
+					sensorListener.attachedSensor();
 				}
 			}
 		}
@@ -146,6 +132,7 @@ public abstract class AMISensor {
 			int len;
 			byte[] rbuf = new byte[4096];
 			for (;;) {
+
 				len = read(rbuf);
 				if (len > 0) {
 					addData(rbuf, len);
@@ -169,6 +156,7 @@ public abstract class AMISensor {
 
 	protected void openUsbSerial() {
 		if (mSerial == null) {
+			return;
 		}
 
 		if (!mSerial.isOpened()) {
@@ -178,9 +166,6 @@ public abstract class AMISensor {
 						UartConfig.DATA_BITS8, UartConfig.STOP_BITS1,
 						UartConfig.PARITY_NONE, false, false));
 			}
-		}
-		if (!mRunningMainLoop) {
-			return;
 		}
 	}
 
@@ -195,7 +180,6 @@ public abstract class AMISensor {
 		} catch (IOException e) {
 			return "";
 		}
-
 		out = out + stTransmit;
 		return out;
 	}

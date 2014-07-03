@@ -32,8 +32,8 @@ public class NTSensor extends AMISensor {
 	private double mLatestVoltage = mOffset;
 	private int mDataCounter = 0;
 
-	public NTSensor(Context c) {
-		super(115200, "a", "s", c);
+	public NTSensor(Context c,AMISensorInterface listener) {
+		super(115200, "a", "s", c,listener);
 		this.mSensorData = new ArrayList<Double>();
 	}
 
@@ -61,7 +61,7 @@ public class NTSensor extends AMISensor {
 	}
 
 	@Override
-	public void initData() {
+	protected void initData() {
 		mSensorData.clear();
 		mText.setLength(0);
 		mDataCounter = 0;

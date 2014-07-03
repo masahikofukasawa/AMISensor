@@ -59,9 +59,9 @@ public class LineSensor extends AMISensor {
 		}
 	}
 
-	private LineSensorData mSensorData = new LineSensorData();
-	private LineSensorData mOffsetData = new LineSensorData();
-	private LineSensorData mLastValue = new LineSensorData();
+	private LineSensorData mSensorData;
+	private LineSensorData mOffsetData;
+	private LineSensorData mLastValue;
 	private StringBuilder mText = new StringBuilder();
 	private int mChIndex = 0;
 	private int mAxisIndex = 0;
@@ -71,8 +71,11 @@ public class LineSensor extends AMISensor {
 	public final static int AXIS_ID_Z = 3;
 	private int mAxisId = AXIS_ID_POWER;
 
-	public LineSensor(Context c) {
-		super(1250000, "mes 0 200", "q", c);
+	public LineSensor(Context c, AMISensorInterface listener) {
+		super(1250000, "mes 0 200", "q", c, listener);
+		mSensorData = new LineSensorData();
+		mOffsetData = new LineSensorData();
+		mLastValue = new LineSensorData();
 	}
 
 	public void setSensorAxis(int id) {
@@ -115,7 +118,7 @@ public class LineSensor extends AMISensor {
 	}
 
 	@Override
-	public void initData() {
+	protected void initData() {
 		mText.setLength(0);
 	}
 
