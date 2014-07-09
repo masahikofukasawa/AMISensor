@@ -23,6 +23,8 @@ import android.util.Log;
 
 public class NTSensor extends AMISensor {
 	public static final int NTSENSOR_SPS = 250;
+//	public static final double NTSENSOR_SPS = 1.0/(1.0/(6000000.0/256.0)*23.0*4.0);
+
 	private static final double DEFAULT_OFFSET = 2.3;
 	private int mMaxSize = 1000; //
 	private double mSensitivity = 4; // 4[V/uT]

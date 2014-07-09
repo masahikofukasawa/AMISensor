@@ -20,13 +20,13 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+//import android.util.Log;
 
 import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
-import static java.lang.Math.log10;
 
 public class AmiFft {
-
+	// private static final String TAG = AmiFft.class.getSimpleName();
 	private List<Double> dFreq = new ArrayList<Double>();
 	private List<Double> dLevel = new ArrayList<Double>();
 	private int iNum;
@@ -44,33 +44,30 @@ public class AmiFft {
 		dOdr = odr;
 		mFft = new FFT4g(iNum);
 		mCopy = new double[iNum];
-		// System.out.println("Num=" + iNum);
+		// Log.e(TAG, "AmiFft: iNum=" + String.valueOf(iNum));
 	}
 
-	public void AmiFftCalc(List<Double> a, boolean isLog) {
+	public boolean AmiFftCalc(List<Double> a) {
 		dLevel.clear();
 		dFreq.clear();
 
-		// if(a.size()<=iNum) return;
+		if (a.size() <= iNum)
+			return true;
 
 		for (int i = 0; i < iNum; i++) {
 			mCopy[i] = a.get(i).doubleValue();
 		}
 		mFft.rdft(1, mCopy);
 		for (int i = 0; i < iNum; i += 2) {
-			if (isLog) {
-				dLevel.add(10 * log10(sqrt(pow(mCopy[i], 2)
-						+ pow(mCopy[i + 1], 2))));
-				if (i != 0) {
-					dFreq.add(10 * log10((i / 2) * 1 / ((double) iNum * dOdr)) + 10);
-				} else {
-					dFreq.add(0.0);
-				}
+			dLevel.add(sqrt(pow(mCopy[i], 2) + pow(mCopy[i + 1], 2))
+					/ (iNum / 2));
+			if (i == 0) {
+				dFreq.add(0.1);
 			} else {
-				dLevel.add(sqrt(pow(mCopy[i], 2) + pow(mCopy[i + 1], 2)));
 				dFreq.add((i / 2) * 1 / ((double) iNum * dOdr));
 			}
 		}
+		return false;
 	}
 
 	public int getNum() {
@@ -97,7 +94,6 @@ public class AmiFft {
 	public static void main(String args[]) {
 		DecimalFormat form = new DecimalFormat("0.00");
 		int num = Integer.parseInt(args[0]);
-		boolean isLog = Boolean.parseBoolean(args[1]);
 
 		List<Double> a = new ArrayList<Double>();
 		AmiFft fft = new AmiFft(num, 0.004);
@@ -116,7 +112,7 @@ public class AmiFft {
 
 			br.close();
 
-			fft.AmiFftCalc(a, isLog);
+			fft.AmiFftCalc(a);
 			for (i = 0; i < fft.getNum(); i++) {
 				System.out.println(i + " " + form.format(fft.getFreq().get(i))
 						+ " " + form.format(fft.getLevel().get(i)) + " ");
