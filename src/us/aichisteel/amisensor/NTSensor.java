@@ -25,7 +25,7 @@ public class NTSensor extends AMISensor {
 	public static final int NTSENSOR_SPS = 250;
 //	public static final double NTSENSOR_SPS = 1.0/(1.0/(6000000.0/256.0)*23.0*4.0);
 
-	private static final double DEFAULT_OFFSET = 2.3;
+	private static final double DEFAULT_OFFSET = 2.36;
 	private int mMaxSize = 1000; //
 	private double mSensitivity = 4; // 4[V/uT]
 	private double mOffset = DEFAULT_OFFSET;
@@ -47,12 +47,20 @@ public class NTSensor extends AMISensor {
 		return mLatestVoltage;
 	}
 
+	public int getMaxTime(){
+		return mMaxSize;
+	}
+	
 	public void setMaxTime(double sec) {
 		if (sec > 0) {
 			mMaxSize = (int) (NTSENSOR_SPS * sec);
 		}
 	}
 
+	public void setSensitivity(int sens){
+		mSensitivity = sens;
+	}
+	
 	@Override
 	public void setOffset() {
 		mOffset = mLatestVoltage;

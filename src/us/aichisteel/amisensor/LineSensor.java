@@ -72,7 +72,7 @@ public class LineSensor extends AMISensor {
 	private int mAxisId = AXIS_ID_POWER;
 
 	public LineSensor(Context c, AMISensorInterface listener) {
-		super(1250000, "mes 0 200", "q", c, listener);
+		super(1250000, "mes 0 200", "mes 1", c, listener);
 		mSensorData = new LineSensorData();
 		mOffsetData = new LineSensorData();
 		mLastValue = new LineSensorData();
