@@ -23,7 +23,7 @@ import android.content.Context;
 import android.util.Log;
 
 public class NTSensor3Axis extends AMISensor {
-	public static final int NTSENSOR_SPS = 125;
+	private int mOdr = 125;
 	private static final double DEFAULT_OFFSET = 2.6;
 	private int mMaxSize = 1000; //
 	private double[] mSensitivity = {1,1,1};
@@ -38,7 +38,14 @@ public class NTSensor3Axis extends AMISensor {
 		super(115200, "a", "s", c,listener);
 		this.mSensorData  = new ArrayList<Double[]>();
 	}
-
+	
+	public int getOdr(){
+		return mOdr;
+	}
+	public void setOdr(int odr){
+		mOdr = odr;
+	}
+	
 	public List<Double[]> getData() {
 		return mSensorData;
 	}
@@ -69,13 +76,13 @@ public class NTSensor3Axis extends AMISensor {
 		return mLatestVoltage;
 	}
 
-	public int getMaxTime(){
+	public int getMaxSize(){
 		return mMaxSize;
 	}
 	
 	public void setMaxTime(double sec) {
 		if (sec > 0) {
-			mMaxSize = (int) (NTSENSOR_SPS * sec);
+			mMaxSize = (int) (mOdr * sec);
 		}
 	}
 
@@ -134,6 +141,29 @@ public class NTSensor3Axis extends AMISensor {
 				mText.append((char) rbuf[i]);
 			} else if (rbuf[i] == '-') {
 				mText.append((char) rbuf[i]);
+			}
+		}
+	}
+	
+	@Override
+	public void startSensor() {
+		openUsbSerial();
+		String ret = "";
+		if (mSerial.isOpened()) {
+			if (!mRunningMainLoop) {
+				try {
+					ret = sendCommand("get odr", 100);
+					setOdr( Integer.parseInt(ret) );
+					Log.e("AMISENSOR: ", "Succeeded Set ODR---" + String.valueOf(getOdr()));
+				} catch (Exception e) {
+					Log.e("AMISENSOR: ", "Failed getting ODR---" + ret + "_length=" + ret.length());
+				}
+			}
+			String strWrite = changeEscapeSequence(stStartCommand);
+			mSerial.write(strWrite.getBytes(), strWrite.length());
+			initData();
+			if (!mRunningMainLoop) {
+				mainloop();
 			}
 		}
 	}

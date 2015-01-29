@@ -17,11 +17,13 @@
 package us.aichisteel.amisensor;
 
 import java.io.IOException;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbManager;
+
 import com.physicaloid.lib.Physicaloid;
 import com.physicaloid.lib.usb.driver.uart.UartConfig;
 
@@ -99,7 +101,7 @@ public abstract class AMISensor {
 	public boolean isReady() {
 		return mSerial.isOpened();
 	}
-
+	
 	BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
@@ -186,6 +188,26 @@ public abstract class AMISensor {
 
 	protected int read(byte[] rbuf) {
 		return mSerial.read(rbuf);
+	}
+	
+	public String sendCommand(String s, int sleep_time) {
+		String retStr = "";
+		if (mSerial.isOpened()) {
+			read(new byte[256]);	// clear buffer
+			String strWrite = changeEscapeSequence(s);
+			mSerial.write(strWrite.getBytes(), strWrite.length());
+			try {
+				Thread.sleep(sleep_time);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			byte[] rbuf = new byte[64];
+			int len = read(rbuf);
+			if (len > 0) {
+				retStr = new String(rbuf,0,len).replaceAll("\n", "").replaceAll("\r", "");
+			}
+		}
+		return retStr;
 	}
 
 	protected String unescapeJava(String str) throws IOException {
