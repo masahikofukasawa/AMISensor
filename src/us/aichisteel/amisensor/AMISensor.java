@@ -65,7 +65,11 @@ public abstract class AMISensor {
 		mContext.registerReceiver(mUsbReceiver, filter);
 		this.sensorListener = listener;
 	}
-
+	
+	public void setStartCommand(String start) {
+		stStartCommand = start;
+	}
+	
 	public void initializeSensor() {
 		openUsbSerial();
 	}
@@ -105,7 +109,7 @@ public abstract class AMISensor {
 	BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
-			if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+			if ( UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action) || USB_PERMISSION.equals(action) ) {
 				if (sensorListener != null) {
 					sensorListener.attachedSensor();
 				}
@@ -113,10 +117,6 @@ public abstract class AMISensor {
 				closeUsbSerial();
 				if (sensorListener != null) {
 					sensorListener.detachedSensor();
-				}
-			} else if (USB_PERMISSION.equals(action)) {
-				if (sensorListener != null) {
-					sensorListener.attachedSensor();
 				}
 			}
 		}
@@ -167,6 +167,8 @@ public abstract class AMISensor {
 				mSerial.setConfig(new UartConfig(iBaudRate,
 						UartConfig.DATA_BITS8, UartConfig.STOP_BITS1,
 						UartConfig.PARITY_NONE, false, false));
+				
+				
 			}
 		}
 	}
@@ -201,7 +203,7 @@ public abstract class AMISensor {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			byte[] rbuf = new byte[64];
+			byte[] rbuf = new byte[256];
 			int len = read(rbuf);
 			if (len > 0) {
 				retStr = new String(rbuf,0,len).replaceAll("\n", "").replaceAll("\r", "");
