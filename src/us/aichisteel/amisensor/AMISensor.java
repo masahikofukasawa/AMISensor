@@ -174,6 +174,7 @@ public abstract class AMISensor {
 	}
 
 	protected void closeUsbSerial() {
+		read(new byte[256]);	// clear buffer
 		mSerial.close();
 	}
 
@@ -190,6 +191,10 @@ public abstract class AMISensor {
 
 	protected int read(byte[] rbuf) {
 		return mSerial.read(rbuf);
+	}
+	
+	public void clearReadBuffer() {
+		read(new byte[256]);	// clear buffer		
 	}
 	
 	public String sendCommand(String s, int sleep_time) {
