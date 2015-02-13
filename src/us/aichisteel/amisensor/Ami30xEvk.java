@@ -121,9 +121,11 @@ public class Ami30xEvk extends AMISensor {
 		mOffset[2] = DEFAULT_OFFSET;
 	}
 	
-	private void getParameter() {
+	private boolean getParameter() {
+		boolean ret = false;
+		sendCommand("act 0",100);	// Set force active for AMI306
 		// read parameter from EVK
-		String[] str = sendCommand("cag", 100).replace("cag|OK:","").split(",");
+		String[] str = sendCommand("cag", 200).replace("cag|OK:","").split(",");
 		try{
 			mParam.fine_output[0] = Double.parseDouble(str[0]);
 			mParam.fine_output[1] = Double.parseDouble(str[1]);
@@ -147,7 +149,6 @@ public class Ami30xEvk extends AMISensor {
 					String.valueOf(mParam.sens[1]) + "," + 
 					String.valueOf(mParam.sens[2]) + ")"
 					);
-			
 		} catch (Exception e) {
 			Log.i("Ami30xEvk: ERROR ",
 					"FineOutput=(" +
@@ -160,6 +161,7 @@ public class Ami30xEvk extends AMISensor {
 					String.valueOf(mParam.sens[2]) + ")"
 					);
 			
+			ret = true;
 		}
 		
 		// read one data for offset value
@@ -181,7 +183,9 @@ public class Ami30xEvk extends AMISensor {
 					str[1] + " " + 
 					str[2] + ""
 					);						
+			ret = true;
 		}
+		return ret;
 	}
 	
 	@Override
@@ -230,7 +234,10 @@ public class Ami30xEvk extends AMISensor {
 		openUsbSerial();
 		if (mSerial.isOpened()) {
 			if (!mRunningMainLoop) {
-				getParameter();
+				if(getParameter()){
+					// Error:
+					
+				}
 			}
 			initData();
 			String strWrite = changeEscapeSequence(stStartCommand);
