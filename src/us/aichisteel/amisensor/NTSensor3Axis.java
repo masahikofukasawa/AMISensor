@@ -23,6 +23,8 @@ import android.content.Context;
 import android.util.Log;
 
 public class NTSensor3Axis extends AMISensor {
+	private static final String TAG = NTSensor3Axis.class.getSimpleName();
+
 	private int mOdr = 125;
 	private static final double DEFAULT_OFFSET = 2.6;
 	private int mMaxSize = 1000; //

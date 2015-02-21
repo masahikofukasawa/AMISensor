@@ -26,7 +26,7 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.pow;
 
 public class AmiFft {
-	// private static final String TAG = AmiFft.class.getSimpleName();
+	private static final String TAG = AmiFft.class.getSimpleName();
 	private List<Double> dFreq = new ArrayList<Double>();
 	private List<Double> dLevel = new ArrayList<Double>();
 	private int iNum;

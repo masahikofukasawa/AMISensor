@@ -19,6 +19,8 @@ package us.aichisteel.amisensor;
 import android.content.Context;
 
 public class LineSensor extends AMISensor {
+	private static final String TAG = LineSensor.class.getSimpleName();
+
 	public class LineSensorData {
 		private double[][] mag = new double[3][16];
 

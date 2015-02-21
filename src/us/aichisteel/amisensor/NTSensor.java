@@ -18,21 +18,24 @@ package us.aichisteel.amisensor;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import android.content.Context;
 import android.util.Log;
 
 public class NTSensor extends AMISensor {
+	private static final String TAG = NTSensor.class.getSimpleName();
+	
 	public static final int NTSENSOR_SPS = 250;
-//	public static final double NTSENSOR_SPS = 1.0/(1.0/(6000000.0/256.0)*23.0*4.0);
-
-	private static final double DEFAULT_OFFSET = 2.36;
+	public static final double DEFAULT_OFFSET_PIC  = 2.36;
+	public static final double DEFAULT_OFFSET_FTDI = 0.00;
+	
+	private double dDefaultOffset = DEFAULT_OFFSET_PIC;
 	private int mMaxSize = 1000; //
 	private double mSensitivity = 4; // 4[V/uT]
-	private double mOffset = DEFAULT_OFFSET;
+	private double mOffset = DEFAULT_OFFSET_PIC;
 	private List<Double> mSensorData;
 	private StringBuilder mText = new StringBuilder();
 	private double mLatestVoltage = mOffset;
-	private int mDataCounter = 0;
 
 	public NTSensor(Context c,AMISensorInterface listener) {
 		super(115200, "a", "s", c,listener);
@@ -61,20 +64,24 @@ public class NTSensor extends AMISensor {
 		mSensitivity = sens;
 	}
 	
+	public void setDefalutOffset(double offset){
+		dDefaultOffset = offset;
+		mOffset = dDefaultOffset;
+	}
+	
 	@Override
 	public void setOffset() {
 		mOffset = mLatestVoltage;
 	}
 	@Override
 	public void clearOffset(){
-		mOffset = DEFAULT_OFFSET;
+		mOffset = dDefaultOffset;
 	}
 
 	@Override
 	protected void initData() {
 		mSensorData.clear();
 		mText.setLength(0);
-		mDataCounter = 0;
 	}
 
 	@Override
@@ -82,15 +89,9 @@ public class NTSensor extends AMISensor {
 		for (int i = 0; i < len; i++) {
 			if (rbuf[i] == 'v') {
 				try {
-					if (mText.length() != 8) {
-						Log.e("AMISENSOR: ", "Wrong Input Stirng1:" + mText
-								+ " Count=" + mDataCounter);
-					} else {
-						mLatestVoltage = Double.parseDouble(mText.toString());
-						mSensorData.add(1000 * (mLatestVoltage - mOffset)
-								/ mSensitivity);
-						mDataCounter++;
-					}
+					mLatestVoltage = Double.parseDouble(mText.toString());
+					mSensorData.add(1000 * (mLatestVoltage - mOffset)
+							/ mSensitivity);
 				} catch (Exception e) {
 					Log.e("AMISENSOR: ", "Wrong Input Stirng2:" + mText);
 				}
@@ -100,6 +101,8 @@ public class NTSensor extends AMISensor {
 					mSensorData.remove(0);
 				}
 			} else if (rbuf[i] >= '0' && rbuf[i] <= '9') {
+				mText.append((char) rbuf[i]);
+			} else if (rbuf[i] == '-') {
 				mText.append((char) rbuf[i]);
 			} else if (rbuf[i] == '.') {
 				mText.append((char) rbuf[i]);

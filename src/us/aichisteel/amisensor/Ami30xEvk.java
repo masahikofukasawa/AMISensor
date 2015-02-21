@@ -23,6 +23,8 @@ import android.content.Context;
 import android.util.Log;
 
 public class Ami30xEvk extends AMISensor {
+	private static final String TAG = Ami30xEvk.class.getSimpleName();
+
 	private final static int DEFAULT_ODR = 100;	// [Hz]
 	private int mOdr = DEFAULT_ODR;
 	private static final double DEFAULT_OFFSET = 0;

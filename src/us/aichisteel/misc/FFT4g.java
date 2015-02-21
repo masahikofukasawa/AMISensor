@@ -8,6 +8,7 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
 public class FFT4g {
+	private static final String TAG = FFT4g.class.getSimpleName();
 	private int[] ip;
 	private double[] w;
 	private int n;
