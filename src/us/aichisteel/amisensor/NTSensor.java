@@ -31,7 +31,7 @@ public class NTSensor extends AMISensor {
 	
 	private double dDefaultOffset = DEFAULT_OFFSET_PIC;
 	private int mMaxSize = 1000; //
-	private double mSensitivity = 4; // 4[V/uT]
+	private double mSensitivity = 4.0; // 4[V/uT]
 	private double mOffset = DEFAULT_OFFSET_PIC;
 	private List<Double> mSensorData;
 	private StringBuilder mText = new StringBuilder();
@@ -60,7 +60,7 @@ public class NTSensor extends AMISensor {
 		}
 	}
 
-	public void setSensitivity(int sens){
+	public void setSensitivity(double sens){
 		mSensitivity = sens;
 	}
 	
