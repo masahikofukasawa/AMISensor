@@ -71,7 +71,7 @@ public class LineSensor extends AMISensor {
 	public final static int AXIS_ID_X = 1;
 	public final static int AXIS_ID_Y = 2;
 	public final static int AXIS_ID_Z = 3;
-	private int mAxisId = AXIS_ID_POWER;
+//	private int mAxisId = AXIS_ID_POWER;
 
 	public LineSensor(Context c, AMISensorInterface listener) {
 		super(1250000, "mes 0 200", "mes 1", c, listener);
@@ -79,7 +79,7 @@ public class LineSensor extends AMISensor {
 		mOffsetData = new LineSensorData();
 		mLastValue = new LineSensorData();
 	}
-
+/*
 	public void setSensorAxis(int id) {
 		mAxisId = id;
 	}
@@ -87,7 +87,7 @@ public class LineSensor extends AMISensor {
 	public int getSensorAxis() {
 		return mAxisId;
 	}
-
+*/
 	public double getData(int ch, int axis) {
 		return mSensorData.getMag(ch, axis) - mOffsetData.getMag(ch, axis);
 	}
